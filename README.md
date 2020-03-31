@@ -40,3 +40,6 @@ ea = toEuler(&qf); // calculate the euler angles
 ```
 
 ## Useful Resources:
+- [BNO055 Data Sheet](https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bno055-ds000.pdf)
+- [BNO055 Driver Quickstart Guide](https://www.bosch-sensortec.com/media/boschsensortec/downloads/application_notes_1/bst-bno055-an007.pdf)
+- [Adafruit BNO055 Breakout Board](https://learn.adafruit.com/adafruit-bno055-absolute-orientation-sensor/overview)
