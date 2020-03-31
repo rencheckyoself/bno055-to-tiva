@@ -8,7 +8,8 @@ This repository contains the files to use the BNO055 driver provided by Bosch on
 Place the files in the proper location to integrate with your current project.
 
 1. Download/clone the [Bosch BNO055 driver](https://github.com/BoschSensortec/BNO055_driver) and place it in your project location.
-2. Copy the following code into your main file to initialize the I2C peripheral and the BNO055 sensor.
+2. Download/clone this repository and place it in your project location. Ensure your project is connected to Tiva's driverlib files to properly compile.
+3. Copy the following code into your main file to initialize the I2C peripheral and the BNO055 sensor.
 
 ```
 ConfigureI2C(); // Set up the I2C peripheral on I2C0
@@ -21,7 +22,8 @@ comres += init_imu(&imu_board); // initialize the sensor
 
 That's it! I would suggest digging into the Bosch driver and the sesnor data sheet to figure out what functions they offer and how to use their functions properly. I haven't found a hosted API but the driver if fully commented with doxygen so you could just generate your own if you don't want to read through the giant source code files.
 
-Also included in the repo is a small quaternion conversion file, here a quick example for how to use it with data returned from the BNO055 driver.
+## Quaternion Conversion
+Also included in the repo is a small quaternion conversion file to interact with the absolute position data returned by the sensor. In short, a quaternion is a method of uniquely representing an orientation in 3D space, for more details checkout the wikipedia page. Here's a quick example for how to use the included files to convert the data returned from the BNO055 driver into euler angles:
 
 ```
 comres += bno055_set_operation_mode(BNO055_OPERATION_MODE_NDOF); // Set the sensor operation mode, note in this mode the sensor should be calibrated first
