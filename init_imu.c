@@ -13,15 +13,12 @@
 #include "init_imu.h"
 #include "bno055.h"
 
-
-
-// extern void UARTprintf(const char *pcString, ...);
-
 void ConfigureI2C()
 {
     /*
       See section 15 and 17 of the TivaWare™ Peripheral Driver Library for more usage info.
     */
+    
     //enable I2C module 0
     SysCtlPeripheralEnable(SYSCTL_PERIPH_I2C0);
 
