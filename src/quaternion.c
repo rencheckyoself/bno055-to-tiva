@@ -5,7 +5,7 @@
 #include "utils/uartstdio.h"
 
 #include "bno055.h"
-#include "bmx_quaternion.h"
+#include "quaternion.h"
 
 Quaternion bnoquat_to_float(struct bno055_quaternion_t *q)
 {

@@ -1,6 +1,6 @@
 //*****************************************************************************
 //
-// main.c - Simple hello world example.
+// This file is a modified version of the 'hello_world' example provided by TI.
 //
 // Copyright (c) 2012-2017 Texas Instruments Incorporated.  All rights reserved.
 // Software License Agreement
@@ -39,15 +39,9 @@
 #include "driverlib/uart.h"
 #include "utils/uartstdio.h"
 
-//*****************************************************************************
-//
-//! A very simple ``hello world'' example.  It simply displays ``Hello World!''
-//! on the UART and is a starting point for more complicated applications.
-//!
-//! UART0, connected to the Virtual Serial Port and running at
-//! 115,200, 8-N-1, is used to display messages from this application.
-//
-//*****************************************************************************
+#include "bno055.h"
+#include "quaternion.h"
+#include "init_imu.h"
 
 //*****************************************************************************
 //
@@ -66,8 +60,7 @@ __error__(char *pcFilename, uint32_t ui32Line)
 // Configure the UART and its pins.  This must be called before UARTprintf().
 //
 //*****************************************************************************
-void
-ConfigureUART(void)
+void ConfigureUART(void)
 {
     //
     // Enable the GPIO Peripheral used by the UART.
@@ -99,95 +92,77 @@ ConfigureUART(void)
 
 //*****************************************************************************
 //
-// Print "Hello World!" to the UART on the evaluation board.
+// Function prototypes
 //
 //*****************************************************************************
-int
-main(void)
-{
-    //volatile uint32_t ui32Loop;
+void printAngle(char* axis, float val);
 
-    //
+int main(void)
+{
     // Enable lazy stacking for interrupt handlers.  This allows floating-point
     // instructions to be used within interrupt handlers, but at the expense of
     // extra stack usage.
-    //
     FPULazyStackingEnable();
 
-    //
     // Set the clocking to run directly from the crystal.
-    //
-    SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_XTAL_16MHZ |
-                       SYSCTL_OSC_MAIN);
+    SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_XTAL_16MHZ | SYSCTL_OSC_MAIN);
 
-    //
-    // Enable the GPIO port that is used for the on-board LED.
-    //
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
-
-    //
-    // Enable the GPIO pins for the LED (PF2 & PF3).
-    //
-    GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_2);
-    GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3);
-
-    //
     // Initialize the UART.
-    //
     ConfigureUART();
 
-    //
-    // Hello!
-    //
-    UARTprintf("Hello, world!\n");
+    // Initialize the I2C
+    ConfigureI2C();
 
-    // do some unnecessary floating-point math to see if the Makefile works:
-    float foo;
-    double foo_int;
-    double foo_frac;
-    foo = sqrtf(2.05f*2.05f);
-    foo_frac = modf((double) foo, &foo_int);
-    UARTprintf("(int) foo = %d.\n",(int)foo);
-    UARTprintf("(int) foo_int = %d.\n",((int) foo_int));
-    UARTprintf("(int) foo_frac = %03d.\n",((int) (1000.0f*foo_frac)));
+    ms_delay(10);
 
-    char msg_buf[20];
-    sprintf(msg_buf,"foo = %f.\n",foo);
-    UARTprintf("%s",msg_buf);
+    // Initialize the sensor
+    init_imu();
 
-    // reset our dummy floating point variable to 0:
-    foo = 0.0f;
+    // Set the sensor operation mode, note in this mode the sensor should be calibrated first
+    set_imu_mode();
+
+    struct bno055_euler_float_t ea; // converted data to euler angles
+
+    int calibrated = 0;
+    Calibration cal;
+
+    while(calibrated == 0)
+    {
+      cal = calibrate_imu();
+
+      UARTprintf("Calibration: ");
+      UARTprintf("Gyro: %d\t", cal.gyro);
+      UARTprintf("Acc: %d\t", cal.accl);
+      UARTprintf("Mag: %d\t", cal.magn);
+      UARTprintf("Sys: %d\n", cal.syst);
+
+      if(cal.syst == 3)
+      {
+        calibrated = 1;
+      }
+
+      ms_delay(10);
+    }
+
     while(1)
     {
-        // increment our dummy floating point variable:
-        foo++;
+      ea = get_abs_position(); // calculate the euler angles
 
-        // Turn on the LED.
-        GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_2, GPIO_PIN_2);
-        GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, GPIO_PIN_3);
+      printAngle("x", ea.r);
+      printAngle("y", ea.p);
+      printAngle("z", ea.h);
+      UARTprintf("\n");
 
-        //
-        // Delay for a bit.
-        //
-        SysCtlDelay(SysCtlClockGet() / 10 / 3);
-
-        //
-        // Turn off the BLUE LED.
-        //
-        GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_2, 0);
-        GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, 0);
-
-        //
-        // Delay for a bit.
-        //
-        SysCtlDelay(SysCtlClockGet() / 10 / 3);
-
-        //
-        // Hello!
-        //
-        sprintf(msg_buf,"foo = %5.3f.\n",sqrtf(foo));
-        UARTprintf("%s",msg_buf);
-
+      ms_delay(10);
     }
 }
 
+
+
+void printAngle(char* axis, float val)
+{
+  char msg_buf[20]; // message
+
+  sprintf(msg_buf, "%s = %f\t", axis, val);
+  UARTprintf("%s",msg_buf);
+}

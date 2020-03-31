@@ -2,23 +2,39 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "inc/hw_gpio.h"
 #include "inc/hw_i2c.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
 
+#include "driverlib/gpio.h"
 #include "driverlib/i2c.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/uart.h"
 
-#include "init_imu.h"
+#include "driverlib/debug.h"
+#include "driverlib/fpu.h"
+#include "driverlib/gpio.h"
+#include "driverlib/i2c.h"
+#include "driverlib/pin_map.h"
+#include "driverlib/rom.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/uart.h"
+#include "driverlib/qei.h"
+
 #include "bno055.h"
+#include "quaternion.h"
+#include "init_imu.h"
+
+static s8 error; // converted data to euler angles
+static struct bno055_euler_float_t last_pos; // converted data to euler angles
 
 void ConfigureI2C()
 {
     /*
       See section 15 and 17 of the TivaWare™ Peripheral Driver Library for more usage info.
     */
-    
+
     //enable I2C module 0
     SysCtlPeripheralEnable(SYSCTL_PERIPH_I2C0);
 
@@ -221,21 +237,65 @@ s8 _imu_i2c_write(u8 dev_address, u8 reg_address, u8 *var_data, u8 count)
     return comres;
 }
 
-void _ms_delay(u32 ms)
+void ms_delay(u32 ms)
 {
   SysCtlDelay(ms * 5334); // 16000000MHz/3000 ~= 5334 assembly commands per ms
 }
 
-s8 init_imu(struct bno055_t *sensor)
+void init_imu()
 {
+  static struct bno055_t sensor;
+
   // initialize setup struct and populate the required information
-  s8 err = 0;
-  sensor->bus_write = _imu_i2c_write;
-  sensor->bus_read = _imu_i2c_read;
-  sensor->delay_msec = _ms_delay;
-  sensor->dev_addr = BNO055_I2C_ADDR1;
+  sensor.bus_write = _imu_i2c_write;
+  sensor.bus_read = _imu_i2c_read;
+  sensor.delay_msec = ms_delay;
+  sensor.dev_addr = BNO055_I2C_ADDR1;
 
   // bno055 builtin initialization function
-  err = bno055_init(sensor);
-  return err;
+  error = bno055_init(&sensor);
+}
+
+void set_imu_mode()
+{
+  error = bno055_set_operation_mode(BNO055_OPERATION_MODE_NDOF);
+}
+
+struct bno055_euler_float_t get_abs_position()
+{
+  struct bno055_quaternion_t q; // the raw data from the sensor
+  Quaternion qf; // cast the raw data from int into float
+
+  error += bno055_read_quaternion_wxyz(&q); // read the sensor
+
+  qf = bnoquat_to_float(&q); // convert raw data to a float
+
+  scale_divide(&qf, QUATERNION_SCALING); // scale the raw data per the sensor data sheet
+
+  last_pos = toEuler(&qf); // calculate the euler angles
+
+  return last_pos;
+}
+
+Calibration calibrate_imu()
+{
+  u8 gyro_cal = 0, acc_cal = 0, mag_cal = 0, sys_cal = 0;
+
+  error = bno055_get_gyro_calib_stat(&gyro_cal);
+  error += bno055_get_mag_calib_stat(&mag_cal);
+  error += bno055_get_accel_calib_stat(&acc_cal);
+  error += bno055_get_sys_calib_stat(&sys_cal);
+
+  Calibration output;
+  output.gyro = gyro_cal;
+  output.accl = acc_cal;
+  output.magn = mag_cal;
+  output.syst = sys_cal;
+
+  return output;
+}
+
+s8 get_error()
+{
+  return error;
 }

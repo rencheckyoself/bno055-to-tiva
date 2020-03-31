@@ -2,8 +2,8 @@
 /// \brief A file to perform quaternion math. It is meant to be used with the
 /// BNO055 IMU driver.
 
-#ifndef BMX_QUATERNION_HG
-#define BMX_QUATERNION_HG
+#ifndef QUATERNION_HG
+#define QUATERNION_HG
 
 /// \def QUATERNION_SCALING
 /// \brief scale raw quaternion output by 2^14 per documentation

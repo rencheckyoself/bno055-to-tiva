@@ -2,10 +2,20 @@
 /// \brief Functions to interact with the IMU. These functions initialize and allow
 /// for easy interaction with the BNO055 IMU.
 
-#ifndef BMX_IMU_HG
-#define BMX_IMU_HG
+#ifndef INIT_IMU_HG
+#define INIT_IMU_HG
 
 #include "bno055.h"
+
+typedef struct Calibration
+{
+/// \brief store all calibration values
+/// \returns a struct with the calibration data
+    unsigned int gyro;
+    unsigned int accl;
+    unsigned int magn;
+    unsigned int syst;
+} Calibration;
 
 /// \brief Configure I2C0. Sets the proper pins and other tiva settings to initialize i2c communication.
 ///
@@ -29,10 +39,26 @@ s8 _imu_i2c_write(u8 dev_address, u8 reg_address, u8 *var_data, u8 count);
 
 /// \brief initiate a blocking delay
 /// \param ms: the duration (in milliseconds) to delay for
-void _ms_delay(u32 ms);
+void ms_delay(u32 ms);
 
 /// \brief used to set the initialization struct needed by the BNO055 driver
 ///
-s8 init_imu(struct bno055_t *sensor);
+void init_imu();
+
+/// \brief used to get the error result returned by the BNO055 driver from the most recent interaction with the sensor. 0 == no error
+///
+s8 get_error();
+
+/// \brief set the mode of the imu
+///
+void set_imu_mode();
+
+/// \biref Get the absolute position by reading the quaternion
+/// \returns the corresponding euler angles
+struct bno055_euler_float_t get_abs_position();
+
+/// \brief Get the current calibration data from the IMU
+/// \returns the calibration data
+Calibration calibrate_imu();
 
 #endif
