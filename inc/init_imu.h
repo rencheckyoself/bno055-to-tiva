@@ -51,7 +51,7 @@ s8 get_error();
 
 /// \brief set the mode of the imu
 ///
-void set_imu_mode();
+void set_imu_mode(u8 op_mode);
 
 /// \biref Get the absolute position by reading the quaternion
 /// \returns the corresponding euler angles

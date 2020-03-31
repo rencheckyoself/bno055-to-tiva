@@ -256,9 +256,9 @@ void init_imu()
   error = bno055_init(&sensor);
 }
 
-void set_imu_mode()
+void set_imu_mode(u8 op_mode)
 {
-  error = bno055_set_operation_mode(BNO055_OPERATION_MODE_NDOF);
+  error = bno055_set_operation_mode(op_mode);
 }
 
 struct bno055_euler_float_t get_abs_position()

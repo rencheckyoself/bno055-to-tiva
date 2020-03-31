@@ -2,24 +2,6 @@
 //
 // This file is a modified version of the 'hello_world' example provided by TI.
 //
-// Copyright (c) 2012-2017 Texas Instruments Incorporated.  All rights reserved.
-// Software License Agreement
-//
-// Texas Instruments (TI) is supplying this software for use solely and
-// exclusively on TI's microcontroller products. The software is owned by
-// TI and/or its suppliers, and is protected under applicable copyright
-// laws. You may not combine this software with "viral" open-source
-// software in order to form a larger program.
-//
-// THIS SOFTWARE IS PROVIDED "AS IS" AND WITH ALL FAULTS.
-// NO WARRANTIES, WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT
-// NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. TI SHALL NOT, UNDER ANY
-// CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
-// DAMAGES, FOR ANY REASON WHATSOEVER.
-//
-// This is part of revision 2.1.4.178 of the EK-TM4C123GXL Firmware Package.
-//
 //*****************************************************************************
 
 #include <math.h>
@@ -119,13 +101,16 @@ int main(void)
     init_imu();
 
     // Set the sensor operation mode, note in this mode the sensor should be calibrated first
-    set_imu_mode();
+    set_imu_mode(BNO055_OPERATION_MODE_NDOF);
 
     struct bno055_euler_float_t ea; // converted data to euler angles
 
     int calibrated = 0;
     Calibration cal;
 
+
+    // Loop until the device is fully calibrated
+    // Read 'Calibration' section of the data sheet for more info on how to calibrate
     while(calibrated == 0)
     {
       cal = calibrate_imu();
