@@ -3,10 +3,14 @@
 ## Description
 This repository contains the files to use the BNO055 driver provided by Bosch on the Tiva platform. Currently it is only tested with the Tiva C Series Launchpads, specifically the TM4C123GXL.
 
-### File Descriptions:
+[Demo Video](https://www.youtube.com/watch?v=Y6t8uzTP2HA)
+
+### Included Files:
 - `init_imu.h`: I2C and IMU initialization functions as well as and some wrapper functions to interact with the IMU.
 - `quaternion.h`: Simple Quaternion conversion functions.
 - `examples/calibrated_position.c`: Example file for how to use the various provided functions. This file will first loop until the device is fully calibrated then read the sensor for the absolute position.
+
+For more details on specific functions check out the header file comments.
 
 ## How to use:
 Place the files in the proper location to integrate with your current project.
@@ -22,7 +26,7 @@ init_imu();
 
 That's it! I would suggest digging into the Bosch driver and the sesnor data sheet to figure out what functions they offer and how to use their functions properly. I haven't found a hosted API but the driver if fully commented with doxygen so you could just generate your own if you don't want to read through the giant source code files.
 
-## Quaternion Conversion
+### Quaternion Conversion
 Also included in the repo is a small quaternion conversion file to interact with the absolute position data returned by the sensor. In short, a quaternion is a method of uniquely representing an orientation in 3D space, for more details checkout the wikipedia page. The available functions are currently targeted at only converting from a quaternion to euler angles.
 
 ## Useful Resources:
