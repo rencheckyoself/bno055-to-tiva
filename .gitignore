@@ -1,0 +1,9 @@
+build/*
+TI_startup_ccs_gcc.c
+Makefile
+*.lds
+bno055.*
+uartstdio.c
+main.c
+*.mp4
+Tiva/*
